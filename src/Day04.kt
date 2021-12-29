@@ -142,7 +142,7 @@ fun main() {
                             val res = boards.filterIndexed { idx, _ ->
                                 idx != k
                             }.toMutableList()
-                            return findAndRemoveWinningBoardIdx(res, guesses.slice(l + 1 until guesses.size))
+                            return findAndRemoveWinningBoardIdx(res, guesses.slice(l until guesses.size))
                         }
                     }
                 }
