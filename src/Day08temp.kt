@@ -35,8 +35,11 @@ fun main() {
         perm@ for (p in permutes) {
             // for a valid permutation, each signal will correspond to one of the 10 possible segment configs
             for (s in signals) {
-                val segment = s.map{c -> orig[p.indexOf(c)]}.sorted().joinToString("")
-                if (!segmentToNum.contains(segment)) continue@perm
+//                val segment = s.map{c -> orig[p.indexOf(c)]}.sorted().joinToString("")
+                val seg1 = s.map { p.indexOf(it) }
+                val seg2 = seg1.map { orig[it] }
+                val seg3 = seg2.sorted().joinToString("")
+                if (!segmentToNum.contains(seg3)) continue@perm
             }
             return p.joinToString("")
         }
