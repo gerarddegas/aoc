@@ -14,13 +14,69 @@ fun main() {
         val hugeMatrix = buildMegaMatrix(initMatrix)
         val n = hugeMatrix[0].size
         val m = hugeMatrix.size
-        dpSumMatrix(hugeMatrix, m, n)
-        return hugeMatrix[m-1][n-1]
+
+        // dikjstras
+        val visited = hashMapOf<Pair<Int,Int>, Boolean>()
+        val totalRiskLevels = hashMapOf<Pair<Int,Int>, Int>()
+        totalRiskLevels[Pair(0,0)] = 0
+        val Q = mutableListOf<Pair<Pair<Int, Int>, Int>>()
+        Q.add(Pair(Pair(0,0), 0))
+
+
+        while (Q.isNotEmpty()) {
+            Q.sortByDescending { it.second }
+            val (location, riskLevel) = Q.removeAt(Q.lastIndex)
+            visited[location] = true
+            // if the location already has a riskLevel lower than the current, skip it
+            if (totalRiskLevels.getOrDefault(location, Int.MAX_VALUE) < riskLevel) continue
+
+            for ((adjRow, adjCol) in hugeMatrix.getAdjacentPairs(location.first, location.second)) {
+                // if we've already visited, skip it
+                if(visited[Pair(adjRow, adjCol)] == true) continue
+                // get distance up until curr location + value at next location
+                val nextRiskLevel = totalRiskLevels.getOrDefault(location, Int.MAX_VALUE) + hugeMatrix[adjRow][adjCol]
+                if (nextRiskLevel < totalRiskLevels.getOrDefault(Pair(adjRow, adjCol), Int.MAX_VALUE)) {
+                    Q.add(Pair(Pair(adjRow, adjCol), nextRiskLevel))
+                    totalRiskLevels[Pair(adjRow, adjCol)] = nextRiskLevel
+                }
+            }
+        }
+
+        return totalRiskLevels[Pair(m-1, n-1)]!!
     }
 
     val input = readInputText("Day15")
-    println(part1(input))
+//    println(part1(input))
     println(part2(input))
+}
+
+private enum class Direction15 {
+    UP, DOWN, LEFT, RIGHT
+}
+
+private fun List<MutableList<Int>>.printMatrix(){
+    for (row in 0 until this.size) {
+        for (col in 0 until this[0].size) {
+            print(this[row][col])
+            print(" ")
+        }
+        println()
+    }
+    println()
+}
+
+private fun isWithinBounds(row: Int, col: Int, matrix: List<MutableList<Int>>): Boolean {
+    val m = matrix.size
+    val n = matrix.first().size
+    return row in 0 until m && col in 0 until n
+}
+
+private fun List<MutableList<Int>>.getAdjacentPairs(row: Int, col: Int): List<Pair<Int, Int>> {
+    val up = Pair(row-1, col)
+    val right = Pair(row, col+1)
+    val down = Pair(row+1, col)
+    val left = Pair(row, col - 1)
+    return listOf(up, right, down, left).filter { isWithinBounds(it.first, it.second, this) }
 }
 
 typealias IntListMatrix = List<List<Int>>
@@ -60,8 +116,8 @@ fun buildMegaMatrix(initialMatrix: IntListMatrix): List<MutableList<Int>> {
             for (i in 0..4) {
                 for (j in 0..4) {
                     var newNumber = initialMatrix[y][x] + (j * 1) + (i * 1)
-                    val newY = y + i * 10
-                    val newX = x + j * 10
+                    val newY = y + i * initialMatrix.size
+                    val newX = x + j * initialMatrix[0].size
                     newMatrix[newY][newX] = if (newNumber > 9) newNumber % 9 else newNumber
                 }
             }
